@@ -1,0 +1,209 @@
+import random
+import numpy as np
+
+""" TafeseSirnaA3Q1
+COMP 1012 SECTION A02
+INSTRUCTOR Dr. Shaiful Chowdhury 
+ASSIGNMENT: A3 Question 1
+AUTHOR: Sirna Tafese
+VERSION November 22, 2024
+PURPOSE: Simulation Escaping a Magical Room Game
+"""
+
+
+def getPositiveInt(prompt, maxValue = 0):
+
+    """
+    Prompt the user to enter a positive integer, optionally within a specified maximum value.
+
+    Parameters:
+        prompt (str): The message displayed to the user.
+        maxValue (int): The maximum allowable value (default is 0, no upper limit).
+
+    Returns:
+        int: A validated positive integer input by the user.
+    """
+
+    # Initialize a flag to control the validity of user input
+    valid = False
+    
+    # Continue prompting until a valid input is received
+    while not valid:
+        # Prompt the user for input and store it as a string
+        userInput = input(prompt)
+        
+        # Check if the input consists only of digits
+        if userInput.isdigit():
+            # Convert the numeric string to an integer
+            value = int(userInput)
+            
+            # Check if the number is positive and within the specified range (if any)
+            if value > 0 and (maxValue == 0 or value <= maxValue):
+                # Set the flag to True if the input is valid
+                valid = True
+            else:
+                # Provide feedback if the input is outside the allowed range
+                if maxValue > 0:
+                    print("Please enter a positive integer between 1 and {}.".format(maxValue))
+                else:
+                    print("Please enter a positive integer greater than 0.")
+        else:
+            # Notify the user if the input is not numeric
+            print("Invalid input. Please enter a numeric value.")
+    
+    # Return the validated positive integer
+    return value
+
+
+def runTrial(doorDurations, freeDoor):
+    """
+    Simulate a single trial of selecting random doors until the free door is found.
+
+    Parameters:
+        doorDurations (list): A list of integers representing the time required to pass through each door.
+        freeDoor (int): The door number that leads to freedom.
+
+    Returns:
+        tuple: A pair (numSelection, totalTime) where:
+               - numSelection is the number of doors selected before finding the free door.
+               - totalTime is the total time spent selecting doors.
+    """
+    # Initialize the counter for the number of door selections
+    numSelection = 0
+    # Initialize the total time spent trying doors
+    totalTime = 0
+    # Variable to store the currently selected door, initially set to an invalid value
+    selectedDoor = 0  
+
+    # Continue selecting doors until the free door is chosen
+    while selectedDoor != freeDoor:
+        # Randomly select a door index between 1 and the total number of doors
+        selectedDoor = random.randint(1, len(doorDurations))
+        # Add the duration of the selected door to the total time (adjusting for 0-based index)
+        totalTime += doorDurations[selectedDoor - 1]
+        # Increment the number of door selections
+        numSelection += 1
+
+    # Return the total number of selections and the total time spent
+    return numSelection, totalTime
+
+
+def runMultiTrials(trials, doorDurations, freeDoor):
+    """
+    Perform multiple trials of random door selection until the free door is found.
+
+    Parameters:
+        trials (int): The number of trials to run.
+        doorDurations (list): A list of integers representing the time required to pass through each door.
+        freeDoor (int): The door number that leads to freedom.
+
+    Returns:
+        list: A list of tuples, where each tuple contains:
+              - The number of doors selected in a trial.
+              - The total time spent in that trial.
+    """
+    # Initialize an empty list to store the results of each trial
+    results = []
+    
+    # Loop through the specified number of trials
+    for _ in range(trials):
+        # Run a single trial using the provided door durations and free door
+        result = runTrial(doorDurations, freeDoor)
+        # Append the result of the trial (number of selections and total time) to the results list
+        results.append(result)
+    
+    # Return the list of results containing data from all trials
+    return results
+
+
+def statistics(results):
+
+    """
+    Compute and display statistics from simulation results.
+
+    Parameters:
+        results (list): A list of tuples where each tuple contains:
+                        - The number of doors selected in a trial.
+                        - The total time spent in that trial.
+
+    Outputs:
+        Prints the average and standard deviation of the number of doors selected and the total time spent.
+    """
+    # Create a list of the number of door selections from the results (first element of each result tuple)
+    numSelections = [result[0] for result in results]
+    # Create a list of total times from the results (second element of each result tuple)
+    totalTimes = [result[1] for result in results]
+    
+    # Calculate the mean (average) of the number of door selections 
+    averageSelections = np.mean(numSelections)
+    # Calculate the standard deviation 
+    stdSelections = np.std(numSelections)
+    # Calculate the mean (average)
+    averageTime = np.mean(totalTimes)
+    # Calculate the standard deviation
+    stdTime = np.std(totalTimes)
+    
+    #Formatted to 3 decimal places
+    # Print the average number of door selections
+    print("The average number of doors selected is: {:.3f}".format(averageSelections))
+    # Print the standard deviation of door selections
+    print("The standard deviation of doors selected is: {:.3f}".format(stdSelections))
+    # Print the average time to escape and standard deviation
+    print("The average number of units of time to escape is: {:.3f}".format(averageTime))
+    print("The standard deviation of units of time to escape is: {:.3f}".format(stdTime))
+
+
+def main():
+
+    """
+    Main function to run the simulation where the user gives inputs such as the random seed, 
+    number of trials, doors, and door-specific walking times. It then executes the simulation and displays results.
+
+    Prompts the user to input, runs multiple trials, and calculates the relevant statistics.
+    """
+
+    # Prompt the user for a random seed and ensure it is a positive integer
+    seed = getPositiveInt("Enter a seed number: ")
+    # Prompt the user for the number of trials to run and ensure it is a positive integer
+    trials = getPositiveInt("How many trials should the game run: ")
+    # Prompt the user for the number of doors in the game and ensure it is a positive integer
+    doors = getPositiveInt("How many doors are there: ")
+    
+    # Initialize an empty list to store the walking times for each door
+    walkTimes = []
+    # Loop through each door to collect the walking time input
+    for i in range(1, doors + 1):
+        # Prompt the user for the time to walk through the current door and ensure it is a positive integer
+        walkTime = getPositiveInt("How long does it take to walk through door {}: ".format(i))
+        # Append the walking time for the current door to the list
+        walkTimes.append(walkTime)
+    
+    # Prompt the user to specify which door leads to freedom, with a maximum value equal to the number of doors
+    freedomDoor = getPositiveInt("Which door would you like to lead to freedom (1-{}): ".format(doors), maxValue=doors)
+    
+    # Random seed for testing the simulation (I like to think of it as a fingerprint)
+    random.seed(seed)
+    
+    # Print a summary of the inputs collected from the user
+    print("\nCollected Inputs:")
+    print("Random Seed: {}".format(seed))
+    print("Number of Trials: {}".format(trials))
+    print("Number of Doors: {}".format(doors))
+    print("Door Walking Times: {}".format(walkTimes))
+    print("Freedom Door: {}".format(freedomDoor))
+    
+    # Notify the user that the simulation is about to run
+    print("\nRunning Simulation...")
+    # Run the simulation for the specified number of trials and collect the results
+    results = runMultiTrials(trials, walkTimes, freedomDoor)
+    
+    # Print the simulation results and compute statistics
+    print("\nSimulation Results:")
+    statistics(results)
+
+
+# Entry point of the program
+if __name__ == "__main__":
+    main()
+
+print("End of Program")
